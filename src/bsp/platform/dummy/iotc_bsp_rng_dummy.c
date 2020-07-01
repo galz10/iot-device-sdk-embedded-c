@@ -1,7 +1,7 @@
-/* Copyright 2018-2020 Google LLC
+/* Copyright 2018-2019 Google LLC
  *
- * This is part of the Google Cloud IoT Device SDK for Embedded C.
- * It is licensed under the BSD 3-Clause license; you may not use this file
+ * This is part of the Google Cloud IoT Device SDK for Embedded C,
+ * it is licensed under the BSD 3-Clause license; you may not use this file
  * except in compliance with the License.
  *
  * You may obtain a copy of the License at:
@@ -86,7 +86,7 @@ void iotc_bsp_rng_shutdown() {
 #include <cyassl/ctaocrypt/random.h>
 #include <iotc_allocator.h>
 
-WC_RNG wolfcrypt_rng;
+static WC_RNG wolfcrypt_rng;
 
 void iotc_bsp_rng_init() {
   /* check if already initialized */

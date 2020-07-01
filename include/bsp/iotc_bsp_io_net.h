@@ -1,7 +1,7 @@
-/* Copyright 2018-2020 Google LLC
+/* Copyright 2018-2019 Google LLC
  *
- * This is part of the Google Cloud IoT Device SDK for Embedded C.
- * It is licensed under the BSD 3-Clause license; you may not use this file
+ * This is part of the Google Cloud IoT Device SDK for Embedded C,
+ * it is licensed under the BSD 3-Clause license; you may not use this file
  * except in compliance with the License.
  *
  * You may obtain a copy of the License at:
@@ -18,114 +18,106 @@
 #define __IOTC_BSP_IO_NET_H__
 
 /**
- * @mainpage Overview
+ * \mainpage IoTC Board Support Package (BSP)
  *
- * @details This is a reference for the Board Support Package (BSP) and its
- * components. The BSP is a set of well-defined functions that the SDK
- * invokes to interact with hardware-specific drivers and routines. The
- * functions run on POSIX platforms by default. To customize the BSP for
- * new devices, see the <a href="../../../porting_guide.md">porting guide</a>.
+ * # Welcome
+ * This doxygen catalogs the Board Support Package (BSP), an abstracted
+ * framework for hosting all of the platform-specific code used by the
+ * Google Cloud IoT Device SDK for Embedded C (IoTC).
  *
- * # Function summary
- * The following tables list the hardware-specific drivers and routines you
- * can define to implement MQTT with TLS.
+ * Porting engineers should focus most of their work to a custom
+ * implementation of these collection of files. The rest of the
+ * IoTC client sources, such as the event system, mqtt serializer, and
+ * callback system, use platform generic C code that should not need
+ * tailoring to specific device SDKs.
  *
- * ## Timekeeping
- * | Function | Description |
- * | --- | --- |
- * iotc_bsp_time_init() | Initializes the platform-specific timekeeping requirements. |  
- * iotc_bsp_time_getcurrenttime_milliseconds() | Gets the milliseconds since Epoch. |
- * iotc_bsp_time_getcurrenttime_seconds() | Gets the seconds since Epoch. |
- * iotc_bsp_time_getmonotonictime_milliseconds() | Gets the monotonic time in milliseconds. |
+ * # Out of the Box
+ * The IoTC Client includes a POSIX implementation of the BSP
+ * which it uses by default on Linux desktops and devices.
+ * For non POSIX platforms your will need to customize the reference
+ * implementation, or begin one from scratch.
  *
- * ## Generating random numbers
- * | Function | Description |
- * | --- | --- |
- * iotc_bsp_rng_get() | Generates and returns a random, 32-bit integer. |
- * iotc_bsp_rng_init() | Initializes the platform-specific RNG requirements. |
- * iotc_bsp_rng_shutdown() | Shuts down the RNG and frees all of the resources from initializing and generating random numbers. |
+ * More information on the porting process can be found
+ * in the IoTC Porting Guide which resides in the main /doc directory
+ * of this project.
  *
- * ## Generating JWTs
- * | Function | Description |
- * | --- | --- |
- * iotc_bsp_base64_encode_urlsafe() | Encodes a string as a URL-safe, base64 string by replacing all URL-unsafe characters with a - (dash) or _ (underscore). |
- * iotc_bsp_ecc() | Generates an Elliptic Curve signature for a private key. |
- * iotc_bsp_sha256() | Generates a SHA256 cryptographic hash. |
+ * # Browsing the Sources
+ * The BSP is segmented into several distinct files, each focused
+ * around a particular platform library requirement:
+ *  - Crypto (IoT Core JWT Signing)
+ *  - Networking
+ *  - Memory Allocators / Dealloactors
+ *  - Random Number Generator
+ *  - Time
+ *  - Transport Layer Security (TLS)
+ *  - File System (For Cert Storage, Optional)
+
  *
- * ## Managing files
- * | Function | Description |
- * | --- | --- |
- * iotc_bsp_io_fs_open() | Opens a file. |
- * iotc_bsp_io_fs_read() | Reads a file. |
- * iotc_bsp_io_fs_stat() | Gets the size of a file. |
- * iotc_bsp_io_fs_write() | Writes to a file. |
- * iotc_bsp_io_fs_close() | Closes a file and frees all of the resources from reading or writing to the file. | 
- * iotc_bsp_io_fs_remove() | Deletes a file. | 
+ * The best place to start would be the NET BSP to couple the IoTC Client to
+ * your device's networking SDK and Crypto to use your TLS or secure chip
+ * library to sign a JWT with a private key.
  *
- * ## Managing TLS connections
- * | Function | Description |
- * | --- | --- |
- * iotc_bsp_tls_init() | Initializes a TLS library and creates a TLS context. | 
- * iotc_bsp_tls_connect() | Starts a TLS handshake. |
- * iotc_bsp_tls_pending() | Gets the pending readable bytes. |
- * iotc_bsp_tls_read() | Decrypts MQTT messages. |
- * iotc_bsp_tls_write() | Encrypts MQTT messages. |
- * iotc_bsp_tls_cleanup() | Frees a TLS context from memory and deletes any associated data. | 
+ * Implementations for Time, Rng and Memory should be highly
+ * portable and might not need any customization at all.
  *
- * ## Managing platform memory
- * | Function | Description |
- * | --- | --- |
- * iotc_bsp_mem_alloc() | Allocates memory and returns a pointer to the allocated block. |
- * iotc_bsp_mem_free() | Frees a block of memory. |
- * iotc_bsp_mem_realloc() | Changes the size of a memory block and returns a pointer to the reallocated block. |
+ * # TLS BSPs
+ * The IoTC Client also ships with support for two TLS implementations
+ * out of the box:
  *
- * ## Creating and managing sockets
- * | Function | Description |
- * | --- | --- |
- * iotc_bsp_io_net_socket_connect() | Creates a {@link iotc_bsp_io_net_socket_connect() socket} and connects it to an endpoint. | 
- * iotc_bsp_io_net_connection_check() | Checks a {@link iotc_bsp_io_net_socket_connect() socket} connection status |
- * iotc_bsp_io_net_read() | Reads from a {@link iotc_bsp_io_net_socket_connect() socket}. |
- * iotc_bsp_io_net_select() | Checks a {@link iotc_bsp_io_net_socket_connect() socket} for scheduled read or write operations. |
- * iotc_bsp_io_net_write() | Writes to a {@link iotc_bsp_io_net_socket_connect() socket}. |
- * iotc_bsp_io_net_close_socket() | Closes a {@link iotc_bsp_io_net_socket_connect() socket}. | 
+ * ## &nbsp;mbedTLS <small>(https://tls.mbed.org)</small>
+ * The default make target will download a tagged mbedTLS release from
+ * their repository, and build it to link against. Additionally the
+ * IoTC Client Sources will be configured to build the its TLS BSP
+ * for mbedTLS which resides in: <code>/src/bsp/mbedtls</code>.
  *
- * # POSIX BSP
- * The POSIX BSP is in the
- * <code><a href="../../../src/bsp/platforms/posix">src/bsp/platforms/posix</a></code>
- * directory. If you're customizing the BSP for a new device, you can refer
- * to this implementation as an example.
+ * ## &nbsp;wolfSSL <small>(https://www.wolfssl.com/)</small>
+ * The client also has a reference TLS BSP implementation for wolfSSL,
+ * another TLS library designed for embedded devices.
  *
- * # TLS implementations
- * The SDK has turn-key
- * <a href="../../../src/bsp/tls/mbedtls">mbedTLS</a>
- * and <a href="../../../src/bsp/tls/wolfssl">wolfSSL</a> implementations. The 
- * default <code>make</code> target
- * <a href="../../../src/bsp/tls/mbedtls">downloads and builds</a> mbedTLS.
+ * Please see our User Guide and Porting Guide for more information on
+ * how to configure the client to use these different TLS implementations.
+ * Both documents reside in the base <code>/doc</code> directory.
  *
- * To use the turn-key wolfTLS implementation, specify 
- * <code>IOTC_BSP_TLS=wolfssl</code> in the
- * <a href="../../../doc/porting_guide.md#build-environment">main makefile</a>.
+ * This should get you up and running quickly but their sources must be
+ * licensed for distribution.
  *
- * The turn-key TLS libraries consist of customized
- * <a href="dd/d79/iotc__bsp__tls_8h.html">iot_bsp_tls.h</a> and
- * <a href="dd/d79/iotc__bsp__crypto_8h.html">iotc_bsp_crypto.h</a>
- * functions:
- * | mbedTLS | wolfSSL |
- * | --- | --- |
- * | <a href="../../../src/bsp/tls/mbedtls/iotc_bsp_tls_mbedtls.c">src/bsp/tls/mbedtls/iotc_bsp_tls_mbedtls.c</a> | <a href="../../../src/bsp/tls/wolfssl/iotc_bsp_tls_wolfssl.c">src/bsp/tls/wolfssl/iotc_bsp_tls_wolfssl.c</a> |
- * | <a href="../../../src/bsp/crypto/mbedtls/iotc_bsp_crypto.c">src/bsp/crypto/mbedtls/iotc_bsp_crypto.c</a> | <a href="../../../src/bsp/crypto/wolfssl/iotc_bsp_crypto.c">src/bsp/crypto/wolfssl/iotc_bsp_crypto.c</a> |
+ * # Further Reading
+ * ### IoTC Client
+ * Information on how to use the Google Cloud IoT Device SDK for Embedded C
+ * from the applications perspective can be found in:
+ * <ul><li>
+ * <a href="../../api/html/index.html">The IoTC Client doxygen</a></li>
+ * <li>The Google Cloud IoT Device SDK for Embedded C User Guide in:
+ *   <code>/doc/user_guide.md</code></li>
+ * </ul>
+ *
+ * ### Porting Process
+ * Documentation on the porting process and more information about
+ * the BSP can be found in the Google Cloud IoT Device SDK Porting
+ * Guide located in: <code>/doc/porting_guide.md</code>.
+ *
  */
 
 /**
- * @file  iotc_bsp_io_net.h
- * @brief Creates and manages asynchronous sockets in the device's native socket library.
+ * @file iotc_bsp_io_net.h
+ * @brief IoTC Client's Board Support Platform (BSP) for Asynchronous Networking
  *
- * @details A typical networking workflow:
- *    1. Create a socket.
- *    2. Connect the socket to a host.
- *    3. Check the connection status.
- *    4. Send data to the host or read data from the socket.
- *    5. Close the socket.
+ * This file defines the API of an asynchronous platform specific networking
+ * implementation. These are all the functions one should implement to couple
+ * the IoTC client to the device's networking SDK.
+ *
+ * These functions should be implemented in a non-blocking fashion.
+ * This means that these function should fit into a coopeartive-multitasking
+ * environment of the IoTC client, which is designed not to block on any
+ * one operation.
+ *
+ * A device connecting to the Could IoT Core service would have a standard
+ * flow looks like the following:
+ *   1. create_socket
+ *   2. connect
+ *   3. connection_check
+ *   4. Iterations of read-write operations
+ *   5. close_socket when the application shuts down the connection.
  */
 
 #include <stddef.h>
@@ -136,176 +128,237 @@ extern "C" {
 #endif
 
 /**
- * @typedef iotc_bsp_io_net_state_t
- * @brief The networking function states.
+ * @typedef iotc_bsp_io_net_state_e
+ * @brief Return value of the BSP NET API functions.
  *
- * @see iotc_bsp_io_net_state_e
+ * The implementation reports internal status to IoTC Client through these
+ * values.
  */
 typedef enum iotc_bsp_io_net_state_e {
-  /** The networking function succeeded. */
+  /** operation finished successfully. */
   IOTC_BSP_IO_NET_STATE_OK = 0,
-  /** Something went wrong. */
+  /** operation failed. */
   IOTC_BSP_IO_NET_STATE_ERROR = 1,
-  /** @details The resource is busy. Invoke function again. */
+  /** resource is busy, means: please invoke this function again later. */
   IOTC_BSP_IO_NET_STATE_BUSY = 2,
-  /** The connection was lost. */
+  /** connection lost during read or write operation. */
   IOTC_BSP_IO_NET_STATE_CONNECTION_RESET = 3,
-  /** A timeout occurred. */
+  /** timeout has occurred during the operation. */
   IOTC_BSP_IO_NET_STATE_TIMEOUT = 4,
 
 } iotc_bsp_io_net_state_t;
 
 /**
- * @typedef iotc_bsp_socket_type_t
- * @brief The socket protocol.
- *
- * @see #iotc_bsp_socket_type_e
- */
-typedef enum iotc_bsp_socket_type_e {
-  /** TCP socket. */
-  SOCKET_STREAM = 1,
-  /** UDP socket. */
-  SOCKET_DGRAM = 2,
-
-} iotc_bsp_socket_type_t;
-
-/**
- * @typedef iotc_bsp_protocol_type_t
- * @brief The version of the socket protocol.
- *
- * @see #iotc_bsp_protocol_type_e
- */
-typedef enum iotc_bsp_protocol_type_e {
-  /** IPv4. */
-  PROTOCOL_IPV4 = 2,
-  /** IPv6. */
-  PROTOCOL_IPV6 = 10,
-
-} iotc_bsp_protocol_type_t;
-
-/**
  * @typedef iotc_bsp_socket_t
- * @brief The socket representation.
+ * @brief IoTC Client BSP NET's socket representation type.
+ *
+ * The IoTC Client BSP NET solution may store platform specific socket
+ * representations (handles, descriptors, etc) in a variable of this type in
+ * create function. This typed variable will be passed to the other NET BSP's
+ * functions for any and all socket operations.
  */
 typedef intptr_t iotc_bsp_socket_t;
 
 /**
- * @typedef iotc_bsp_socket_events_t
- * @brief The socket state.
- * @see #iotc_bsp_socket_events_s
+ * @typedef iotc_bsp_socket_event_s
+ * @brief Ties socket with its in/out state required for bsp select call
  *
- * @struct iotc_bsp_socket_events_s
- * @brief The socket state.
+ * This structure is used by the IoTC Client's internal system to track
+ * socket state. The BSP implementation should query native socket states using
+ * a native socket call like select() and map those states to the flags in this
+ * structure.
  */
 typedef struct iotc_bsp_socket_events_s {
-  /** The platform-specific socket value. */
+  /** platform specific value of socket. */
   iotc_bsp_socket_t iotc_socket;
-  /** <code>1</code> if a write request is made to a socket, <code>0</code>
-   * otherwise. */
+  /** 1 if socket wants to read, 0 otherwise. */
   uint8_t in_socket_want_read : 1;
-  /** <code>1</code> if a read request is made to a socket, <code>0</code>
-   * otherwise. */
+  /** 1 if socket wants to write, 0 otherwise. */
   uint8_t in_socket_want_write : 1;
-  /** <code>1</code> if an error request is made to a socket, <code>0</code>
-   * otherwise. */
+  /** 1 if socket wants to know about error, 0 otherwise. */
   uint8_t in_socket_want_error : 1;
-  /** <code>1</code> if a connection request is made to a socket, <code>0</code>
-   * otherwise. */
+  /** 1 if socket waits to get connected, 0 othwerwise. */
   uint8_t in_socket_want_connect : 1;
-  /** <code>1</code> if data can be read from a socket, <code>0</code>
-   * otherwise. */
+  /** set to 1 if socket can read, 0 otherwise. */
   uint8_t out_socket_can_read : 1;
-  /** <code>1</code> if data can be written to a socket, <code>0</code>
-   * otherwise. */
+  /** set to 1 if socket can write, 0 otherwise. */
   uint8_t out_socket_can_write : 1;
-  /** <code>1</code> if an error occurs on the socket, <code>0</code>
-   * otherwise. */
+  /** set to 1 if there was an error on the socket, 0 otherwise */
   uint8_t out_socket_error : 1;
-  /** <code>1</code> if a connection request succeeded, <code>0</code>
-   * otherwise. */
+  /** set to 1 if the connection process is finished, 0 otherwise */
   uint8_t out_socket_connect_finished : 1;
 } iotc_bsp_socket_events_t;
 
 /**
- * @details Creates a socket and connects it to an endpoint.
+ * @function
+ * @brief Provides a method for the IoTC library to query socket states. These
+ * states will be used by the IoTC Client Library to schedule various read and
+ * write operations as the library communicates with the Google Cloud IoT Core
+ * service
  *
- * @param [out] iotc_socket The platform-specific socket representation
- *     This value is passed to all further BSP networking calls.
- * @param [in] host The null-terminated IP or fully-qualified domain name of the
- *     host at which to connect.
- * @param [in] port The port number of the endpoint.
- * @param [in] socket_type The {@link #iotc_bsp_socket_type_e socket protocol}.
- */
-iotc_bsp_io_net_state_t iotc_bsp_io_net_socket_connect(
-    iotc_bsp_socket_t* iotc_socket, const char* host, uint16_t port,
-    iotc_bsp_socket_type_t socket_type);
-
-/**
- * @brief Checks a {@link iotc_bsp_io_net_socket_connect() socket} for scheduled
- * read or write operations.
+ * The function is passed an array of socket descriptors as were returned by the
+ * iotc_bsp_io_net_create_socket call. Each element in the array corresponds to
+ * a specific socket, and contains an initialized iotc_bsp_socket_state_t
+ * structure to be filled out by this BSP implementation.
  *
- * @param [in] socket_events_array An array of socket events.
- * @param [in] socket_events_array_size The number of elements in
- *     socket_events_array.
- * @param [in] timeout_sec The number of seconds before timing out.
+ * The BSP function should invoke functions in the native socket library to
+ * query the state of the sockets and fill in the corresponding fields in
+ * iotc_bsp_socket_state_t for that corresponding descriptor.
  *
- * @returns A {@link #iotc_bsp_socket_events_s networking function state}.
+ * @param [in] socket_events_array an array of sockets and sockets' events
+ * @param [in] socket_events_array_size size of the socket_events_array
+ * @param [in] timeout used for passive waiting function must not wait longer
+ * than the given timeout ( in seconds )
+ *
+ * @return
+ * - IOTC_BSP_IO_NET_STATE_OK - if select call updated any socket event.
+ * - IOTC_BSP_IO_NET_STATE_TIMEOUT - if select call has encountered timeout.
+ * - IOTC_BSP_IO_NET_STATE_ERROR - if select call finished with error.
  */
 iotc_bsp_io_net_state_t iotc_bsp_io_net_select(
     iotc_bsp_socket_events_t* socket_events_array,
-    size_t socket_events_array_size, long timeout_sec);
+    size_t socket_events_array_size, long timeout_sec /* in seconds */);
 
 /**
- * @details Checks a {@link iotc_bsp_io_net_socket_connect() socket} connection
- * status.
+ * @function
+ * @brief Creates the non-blocking socket.
  *
- * The SDK calls the function after iotc_bsp_io_net_connect() to complete the
- * socket connection. If the socket is connected, the SDK initiates a TLS
- * handshake.
+ * Creates the platform specific non-blocking socket and stores in it in the
+ * function parameter iotc_socket_nonblocking.
  *
- * @param [in] iotc_socket The socket on which check the connection.
- * @param [in] host The null-terminated IP or fully-qualified domain name of the
- *     host at which to connect.
- * @param [in] port The port number of the endpoint.
+ * @param [out] iotc_socket_nonblocking the platform specific socket
+ * representation should be stored in this variable. This value will be passed
+ * along further BSP function calls.
+ * @return
+ * - IOTC_BSP_IO_NET_STATE_OK - if the socket was created successfully.
+ * - IOTC_BSP_IO_NET_STATE_ERROR - otherwise.
+ */
+iotc_bsp_io_net_state_t iotc_bsp_io_net_create_socket(
+    iotc_bsp_socket_t* iotc_socket_nonblocking);
+
+/**
+ * @function
+ * @brief Connects the socket to an endpoint defined by the host and port
+ * parameters.
+ *
+ * @param [in] iotc_socket_nonblocking the socket which needs to be connected
+ *                                   (generated by iotc_bsp_io_net_create_socket
+ * function.)
+ * @param [in] host Null terminated IP or Fully Qualified Domain Name (FQDN)
+ * of the host to connect to.
+ * @param [in] port the port number of the endpoint.
+ * @return
+ * - IOTC_BSP_IO_NET_STATE_OK - if successfully connected.
+ * - IOTC_BSP_IO_NET_STATE_ERROR - otherwise.
+ */
+iotc_bsp_io_net_state_t iotc_bsp_io_net_connect(
+    iotc_bsp_socket_t* iotc_socket_nonblocking, const char* host,
+    uint16_t port);
+
+/**
+ * @function
+ * @brief Reports to the IoTC Client whether the provided socket is connected.
+ *
+ * This is called after the 'connect' function. If the socket is connected, the
+ * IoTC will start to use read/write to handshake the TLS connection.  If the
+ * return value is otherwise, then a failed connection will be reported to the
+ * client Application via its IoTC Connection Callback.
+ *
+ * The two separate functions (connect and connection_check) may be confusing.
+ * The asynchronous property of the IoTC Client requires the separation of
+ * these functions. The actual TCP/IP socket connection is performed in the
+ * time between these two function calls, when select will be called on POSIX
+ * platforms, and networking tick operations invoked on No-OS devcies to
+ * complete the connection process.
+ *
+ * @param [in] iotc_socket_nonblocking the socket on which to perform the
+ * connection check.
+ * @param [in] host Null terminated IP or FQDN of the host to connect to.
+ * @param [in] port the port number of the endpoint.
+ * @return
+ * - IOTC_BSP_IO_NET_STATE_OK - if socket is successfully connected.
+ * - IOTC_BSP_IO_NET_STATE_ERROR - otherwise.
  */
 iotc_bsp_io_net_state_t iotc_bsp_io_net_connection_check(
-    iotc_bsp_socket_t iotc_socket, const char* host, uint16_t port);
+    iotc_bsp_socket_t iotc_socket_nonblocking, const char* host, uint16_t port);
 
 /**
- * @brief Writes data to a {@link iotc_bsp_io_net_socket_connect() socket}.
+ * @function
+ * @brief Sends data on the socket.
  *
- * @details This function writes data in chunks, so the SDK calls it
- * repeatedly until all chunks are written to the buffer. The SDK writes
- * a new chunk to the socket on each event loop tick.
+ * The IoTC Client calls this function if there is data to be sent. Just like
+ * the other functions in this BSP, this send operation shall not block.
+ * This function should write as many bytes in a chunk as possible.
  *
- * @param [in] iotc_socket_nonblocking The socket on which to send data.
- * @param [out] out_written_count The number of bytes written to the socket.
- *     If the value is negative, the connection is closed.
- * @param [in] buf A pointer to a buffer with the data.
- * @param [in] count The size, in bytes, of the buffer to which the buf
- *     parameter points.
+ * Keep in mind that as long as this function blocks, no other event
+ * or request will be fulfilled by the IoTC Client.
+ *
+ * The out parameter and return value of the function may signify a unfinished
+ * state of the send operation. If this occurs, then this same function
+ * will be called again later with the remaining data. A delay between these
+ * two calls should afford the system time to complete the transmission
+ * of the first chunk so that the second send event may be processed.
+ *
+ * @param [in] iotc_socket_nonblocking data is sent on this socket.
+ * @param [out] out_written_count upon return this should contain the number of
+ * sent bytes. Negative values will cause the IoTC client to close the
+ * connection.
+ * @param [in] buf the data to send.
+ * @param [in] count number of bytes to send from the buffer. This is the size
+ * of the buffer.
+ * @return
+ * - IOTC_BSP_IO_NET_STATE_OK - if the whole buffer is sent. i.e. #count
+ *                            bytes are sent. *out_written_count == count.
+ * - IOTC_BSP_IO_NET_STATE_BUSY - if only a partial send of the buffer was
+ * completed.  This return value tells the system to call this function again
+ * with remaining data.
+ * *out_written_count < count. Outgoing parameter number of written bytes. This
+ * must be set properly!
+ * - IOTC_BSP_IO_NET_STATE_ERROR - an error occurred during the write
+ * operation.
  */
 iotc_bsp_io_net_state_t iotc_bsp_io_net_write(
     iotc_bsp_socket_t iotc_socket_nonblocking, int* out_written_count,
     const uint8_t* buf, size_t count);
 
 /**
- * @brief Reads data from a {@link iotc_bsp_io_net_socket_connect() socket}.
+ * @function
+ * @brief Reads data from the socket.
  *
- * @param [in] iotc_socket_nonblocking The socket from which to read data.
- * @param [out] out_read_count The number of bytes read from the socket.
- * @param [out] buf A pointer to a buffer with the data read from the socket.
- * @param [in] count The size, in bytes, of the buffer to which the buf
- *     parameter points.
+ * IoTC Client calls this function if data is expected to arrive on the socket.
+ * This function shall not block. It is up to the implementation to determine
+ * how many bytes to read at once without blocking the non blocking operation
+ * flow for too long.  If the IoTC Client requires more data this function will
+ * be called again.
+ *
+ * @param [in] iotc_socket_nonblocking data is read from this socket.
+ * @param [out] out_read_count upon return this shall contain the number of
+ * read bytes.
+ * @param [out] buf upon return this buffer shall contain the read bytes.
+ * @param [in] count available capacity of the buffer. A maximum this number of
+ * bytes can be stored in the buffer.
+ * @return
+ * - IOTC_BSP_IO_NET_STATE_OK - some bytes were read from the socket, number of
+ * bytes should be set properly. 0 < *out_read_count.
+ * - IOTC_BSP_IO_NET_STATE_BUSY - if no data is available on the socket
+ * currently. This will cause the IoTC Client to revisit this function later on.
+ * *out_read_count == 0.
+ * - IOTC_BSP_IO_NET_STATE_ERROR - error occurred during the read operation.
  */
 iotc_bsp_io_net_state_t iotc_bsp_io_net_read(
     iotc_bsp_socket_t iotc_socket_nonblocking, int* out_read_count,
     uint8_t* buf, size_t count);
 
 /**
- * @brief Closes a {@link iotc_bsp_io_net_socket_connect() socket}.
+ * @function
+ * @brief Closes the socket.
  *
- * @param [in] iotc_socket_nonblocking The socket to close.
+ * Platform dependent socket close implementation.
+ *
+ * @param [in] iotc_socket_nonblocking the socket to be closed.
+ * @return
+ * - IOTC_BSP_IO_NET_STATE_OK - if socket closed successfully.
+ * - IOTC_BSP_IO_NET_STATE_ERROR - otherwise.
  */
 iotc_bsp_io_net_state_t iotc_bsp_io_net_close_socket(
     iotc_bsp_socket_t* iotc_socket_nonblocking);

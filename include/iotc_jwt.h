@@ -1,7 +1,7 @@
-/* Copyright 2018-2020 Google LLC
+/* Copyright 2018-2019 Google LLC
  *
- * This is part of the Google Cloud IoT Device SDK for Embedded C.
- * It is licensed under the BSD 3-Clause license; you may not use this file
+ * This is part of the Google Cloud IoT Device SDK for Embedded C,
+ * it is licensed under the BSD 3-Clause license; you may not use this file
  * except in compliance with the License.
  *
  * You may obtain a copy of the License at:
@@ -23,47 +23,66 @@
 extern "C" {
 #endif
 
-/*! \file
- * @brief Creates JSON Web Tokens for authenticating to Cloud IoT Core.
- */
-
-/** The size, in bytes, of the JWT header. */
 #define IOTC_JWT_HEADER_BUF_SIZE 40
-/** The size, in bytes, of the URL-encoded JWT header. */
 #define IOTC_JWT_HEADER_BUF_SIZE_BASE64 \
   (((IOTC_JWT_HEADER_BUF_SIZE + 2) / 3) * 4)
 
-/** The size, in bytes, of the JWT payload. */
 #define IOTC_JWT_PAYLOAD_BUF_SIZE 256
-/** The size, in bytes, of the URL-encoded JWT payload. */
 #define IOTC_JWT_PAYLOAD_BUF_SIZE_BASE64 \
   (((IOTC_JWT_PAYLOAD_BUF_SIZE + 2) / 3) * 4)
 
-/** The maximum size, in bytes, of the JWT signature. */
 #define IOTC_JWT_MAX_SIGNATURE_SIZE 132
-/** The maxiumum size, in bytes, of the URL-encoded JWT. */
 #define IOTC_JWT_MAX_SIGNATURE_SIZE_BASE64 \
   (((IOTC_JWT_MAX_SIGNATURE_SIZE + 2) / 3) * 4)
 
-/** The size, in bytes, of the JWT. */
 #define IOTC_JWT_SIZE                                                       \
   (IOTC_JWT_HEADER_BUF_SIZE_BASE64 + 1 + IOTC_JWT_PAYLOAD_BUF_SIZE_BASE64 + \
    1 + IOTC_JWT_MAX_SIGNATURE_SIZE_BASE64)
 
 /**
- * @brief Creates a JWT for authenticating to Cloud IoT Core.
+ * @function
+ * @brief Creates a JWT which will be used to connect to the IoT Core service.
+ * The JWT should be used in the MQTT Connect password field when connecting
+ * to IoT Core.
  *
- * @param [in] expiration_period_sec The number of seconds before this JWT
- *     expires.
- * @param [in] project_id The GCP project ID.
- * @param [in] private_key_data ES256 private key data.
- * @param [in,out] dst_jwt_buf A pointer to a buffer that stores a formatted and
- *     signed JWT.
- * @param [in] dst_jwt_buf_len The length, in bytes, of the buffer to which
- *     dst_jwt_buf points.
- * @param [out] bytes_written The number of bytes written to the buffer to which
- *     dst_jwt_buf points.
+ * The function currently supports ES256 key types only, as its intended
+ * for small devices where ECC algorithims should be used to their smaller
+ * key footprint requirements.
+ *
+ * Note: This function invokes the Crypto BSP functions
+ * iotc_bsp_sha256(), iotc_bsp_ecc(), and iotc_bsp_base64_encode_urlsafe()
+ * to fullfill string encoding and signature functionality.
+ *
+ * @param [in] expiration_period_sec the length of time (in seconds) before
+ * this JWT will expire.
+ * @param [in] project_id the project id the device belongs to in the GCP
+ * IoT organization.
+ * @param [in] private_key_data data identifying a private key to be used
+ * to sign the JWT. For more information on how to generate a
+ * private-public key pair for your device, please see:
+ * https://cloud.google.com/iot/docs/how-tos/credentials/keys.
+ * @param [in/out] a pointer to a buffer to hold the formatted and signed
+ * JWT.
+ * @param [in] dst_jwt_buf_len the length of the dst_jwt_buf buffer, in
+ * bytes.
+ * @param [out] bytes_written will contain the number of bytes
+ * that were written to the provided dst_jwt_buf.
+ *
+ * @returns IOTC_STATE_OK if jwt generation was successful.
+ * @returns IOTC_INVALID_PARAMETER if the project_id, private_key_data or
+ * dst_jwt_buf parameters are NULL, or if either of the crypto bsp
+ * functions returns IOTC_BSP_CRYPTO_INVALID_INPUT_PARAMETER_ERROR.
+ * @returns IOTC_ALG_NOT_SUPPORTED_ERROR if the
+ * private_key_data->crypto_key_signature_algorithm is not of type
+ * IOTC_CRYPTO_KEY_SIGNATURE_ALGORITHM_ES256.
+ * @returns IOTC_NULL_KEY_DATA_ERROR if the private_key_data is of type
+ * IOTC_CRYPTO_KEY_UNION_TYPE_PEM and the
+ * private_key_data->crypto_key_union.key_pem.key pointer is NULL.
+ * @returns IOTC_NOT_IMPLEMENTED if the private_key_data->crypto_key_union
+ * is of an uknown type.
+ * @returns IOTC_BUFFER_TOO_SMALL_ERROR if the crypto BSP returns
  */
+
 iotc_state_t iotc_create_iotcore_jwt(
     const char* project_id, uint32_t expiration_period_sec,
     const iotc_crypto_key_data_t* private_key_data, char* dst_jwt_buf,

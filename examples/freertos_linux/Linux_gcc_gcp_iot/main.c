@@ -36,10 +36,10 @@
  *
  ***************************************************************************/
 
-/* Copyright 2018-2020 Google LLC
+/* Copyright 2018-2019 Google LLC
  *
  * This is part of the Google Cloud IoT Device SDK for Embedded C.
- * It is licensed under the BSD 3-Clause license; you may not use this file
+ * it is licensed under the BSD 3-Clause license; you may not use this file
  * except in compliance with the License.
  *
  * You may obtain a copy of the License at:
@@ -58,7 +58,6 @@
 
 #include <iotc.h>
 #include <iotc_jwt.h>
-#include <iotc_error.h>
 #include "commandline.h"
 #include "example_utils.h"
 
@@ -88,7 +87,7 @@ void task_function_gcpiot_embedded_c(void *parameters) {
       IOTC_JWT_SIZE, &bytes_written);
 
   if (IOTC_STATE_OK != state) {
-    printf("iotc_create_iotcore_jwt returned with error: %ul : %s\n", state, iotc_get_state_string(state));
+    printf("iotc_create_iotcore_jwt returned with error: %ul", state);
     iotc_shutdown();
     return;
   }

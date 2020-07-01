@@ -1,7 +1,7 @@
-/* Copyright 2018-2020 Google LLC
+/* Copyright 2018-2019 Google LLC
  *
- * This is part of the Google Cloud IoT Device SDK for Embedded C.
- * It is licensed under the BSD 3-Clause license; you may not use this file
+ * This is part of the Google Cloud IoT Device SDK for Embedded C,
+ * it is licensed under the BSD 3-Clause license; you may not use this file
  * except in compliance with the License.
  *
  * You may obtain a copy of the License at:
@@ -73,7 +73,7 @@ iotc_state_t iotc_user_sub_call_wrapper(void* context, void* data,
           msg->publish.content ? msg->publish.content->data_ptr : NULL;
       params.message.temporary_payload_data_length =
           msg->publish.content ? msg->publish.content->length : 0;
-      params.message.topic = (const char*)msg->publish.topic_name->data_ptr;
+      params.message.topic = (const char*)sub_data->subscribe.topic;
 
       in_state = iotc_mqtt_convert_to_qos(msg->common.common_u.common_bits.qos,
                                           &params.message.qos);

@@ -1,37 +1,3 @@
-# Google Cloud IoT Core Device SDK for Embedded C version  1.0.2
-#### February 4, 2020
-
-- Wildcard topic name support in MQTT subscriptions, [#89](https://github.com/GoogleCloudPlatform/iot-device-sdk-embedded-c/pull/89) by [@sheindel](https://github.com/sheindel), thank you!
-- Documentation overhaul, see Device SDK [API](https://googlecloudplatform.github.io/iot-device-sdk-embedded-c/api/html/) and [BSP](https://googlecloudplatform.github.io/iot-device-sdk-embedded-c/bsp/html/) references.
-- Zephyr integration fixes, using Zephyr v1.14.0.
-- Improvements on the 'make' build system (wolfssl fixes, addressing rebuild
-  issues).
-
-# Google Cloud IoT Core Device SDK for Embedded C version  1.0.1
-#### April 8, 2019
-
-- The TLS Board Support Package (BSP) reference implementation for mbedTLS has been updated to use deterministic ECDSA signatures.
-
-- `iotc_get_state_string` may now be used to query error strings for application debugging. See `include/iotc_error.h` to enable this feature.
-
-- Updated the gtest framework compilation standard to c++14.  This does not affect the IoT Device SDK library sources.
-
-- Documentation:
-  - Updates to the Device SDK [API](https://googlecloudplatform.github.io/iot-device-sdk-embedded-c/api/html/) and [BSP](https://googlecloudplatform.github.io/iot-device-sdk-embedded-c/bsp/html/) doxygen documentation.
-  - [`README.md`](README.md) formatting updates.
-  - [`CONTRIBUTING.md`](CONTRIBUTING.md) includes a new pull request processes and a link to the Google style guidelines.
-
-- Networking BSP:
-  - Added UDP and IPv6 support.
-  - Removed the function `iotc_bsp_io_net_create_socket`. Sockets should now be created in BSP implementations of `iotc_bsp_iot_net_socket_connect`.
-  - See `include/bsp/iotc_bsp_io_net.h` for more information about these changes.
-  - Removed `src/bsp/platform/posix/iotc_bsp_hton.h` as it was no longer required.
-
-- Time API:
-  - The `iotc_time_t` typedef is now defined as an `int64_t`.
-  - Added the function `iotc_bsp_time_getmonotonictime_milliseconds`.
-  - See `include/bsp/iotc_time.h` for more information about these changes.
-
 # Google Cloud IoT Core Device SDK for Embedded C version  1.0
 #### February 22, 2019
 
@@ -44,7 +10,7 @@
 - Connection API Changes:
   - JWT creation and formation was added to a new header file `include/iotc_jwt.h`.
   - `iotc_connect` and `iotc_connect_to` now take the standard MQTT connect credentials of username, password, and client_id.  A JWT, formatted according to [Cloud IoT Core specifications](https://cloud.google.com/iot/docs/how-tos/credentials/jwts), should be passed as the MQTT password when connecting to Cloud IoT Core.
-  - For more information, see the Device SDK [API](https://googlecloudplatform.github.io/iot-device-sdk-embedded-c/api/html/index.html) or [BSP](https://googlecloudplatform.github.io/iot-device-sdk-embedded-c/bsp/html/index.html) reference.
+  - For more information, see the Doxygen reference in the `include/` directory source files or the `doc/doxygen/api` directory (for the HTML formatted documentation).
 
 # Google Cloud IoT Core Device SDK for Embedded C version 0.7
 #### October 1, 2018
